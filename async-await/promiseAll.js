@@ -1,6 +1,15 @@
-const fetchToDos = () => fetch("https://jsonplaceholder.typicode.com/todos").then(res => res.json());
-const fetchPosts = () => fetch("https://jsonplaceholder.typicode.com/posts").then(res => res.json());
-const fetchUsers = () => fetch("https://jsonplaceholder.typicode.com/users").then(res => res.json());
+const fetchToDos = async () => {
+  const res = await fetch("https://jsonplaceholder.typicode.com/todos");
+  return await res.json();
+}
+const fetchPosts = async () => {
+  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
+  return await res.json();
+}
+const fetchUsers = async () => {
+  const res = await fetch("https://jsonplaceholder.typicode.com/users")
+  return await res.json();
+}
 
 const fetchAllData = async () => {
   try {
