@@ -1,0 +1,1 @@
+https://user:password@host.com:8080/resourse/path/?query=name&ttt=123#hash
