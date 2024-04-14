@@ -1,9 +1,8 @@
-const Jimp = require("jimp");
 const fs = require("fs").promises;
 const express = require("express");
 const path = require("path");
 const multer = require("multer");
-const { setupFolder } = require('./helpers')
+const { setupFolder, isImageAndTransform } = require('./helpers')
 const { v4: uuidV4 } = require("uuid");
 
 const app = express();
@@ -21,6 +20,62 @@ const storage = multer.diskStorage({
     filename: (req, file, cb) => {
         cb(null, `${uuidV4()}${file.originalname}`);
     },
+});
+
+const extensionWhiteList = [".jpg", ".jpeg", ".png", ".gif"];
+const mimetypeWhiteList = ["image/png", "image/jpg", "image/jpeg", "image/gif"];
+
+const uploadMiddleware = multer({
+    storage,
+    fileFilter: async (req, file, cb) => {
+        const extension = path.extname(file.originalname).toLowerCase();
+        const mimetype = file.mimetype;
+        if (
+            !extensionWhiteList.includes(extension) ||
+            !mimetypeWhiteList.includes(mimetype)
+        ) {
+            return cb(null, false);
+        }
+        return cb(null, true);
+    },
+    limits: {
+        fileSize: 1024 * 1024 * 5, // 5MB
+    },
+});
+
+app.post(
+    "/upload",
+    uploadMiddleware.single("picture"),
+    async (req, res, next) => {
+        if (!req.file) {
+            return res.status(400).json({ message: "File isn't a photo" });
+        }
+        const { path: temporaryPath } = req.file;
+        const extension = path.extname(temporaryPath);
+        const fileName = `${uuidV4()}${extension}`;
+        const filePath = path.join(storeImageDir, fileName);
+
+        try {
+            await fs.rename(temporaryPath, filePath);
+        } catch (e) {
+            await fs.unlink(temporaryPath)
+            return next(e)
+        }
+
+        const isValidAndTransform = await isImageAndTransform(filePath);
+        if (!isValidAndTransform) {
+            await fs.unlink(filePath);
+            return res
+                .status(400)
+                .json({ message: "File isnt a photo but is pretending" });
+        }
+        res.redirect(`/uploaded/${fileName}`)
+    }
+);
+
+app.get("/uploaded/:imgPath", (req, res) => {
+    const { imgPath } = req.params;
+    res.render("uploaded", { imgPath });
 });
 
 app.use((req, res, next) => {
