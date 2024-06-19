@@ -6,6 +6,10 @@
 //     })
 //     .catch(err => console.log(err.message));
 
+// fs.writeFile('example.txt', 'Hello World!')
+//     .then(() => console.log('File written successfully!'))
+//     .catch(err => console.log(err.message));
+
 // fs.appendFile('readme.txt', '\nNew line of text.')
 //     .then(() => console.log('Text appended successfully!'))
 //     .catch(err => console.log(err.message));
